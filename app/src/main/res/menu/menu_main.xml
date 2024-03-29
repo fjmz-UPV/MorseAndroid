@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="es.upv.etsit.ait.paco.martinez.morse.decodificador1.MainActivity">
+    <item
+        android:id="@+id/ajustes"
+        android:orderInCategory="100"
+        android:title="@string/ajustes"
+        app:showAsAction="never" />
+</menu>

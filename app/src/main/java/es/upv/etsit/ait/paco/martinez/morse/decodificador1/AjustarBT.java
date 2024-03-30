@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,12 +18,17 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import android.Manifest;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 public class AjustarBT extends AppCompatActivity {
 
@@ -157,8 +163,7 @@ public class AjustarBT extends AppCompatActivity {
 
 
 
-
-
+        spinnerListaDispositivosBT = (Spinner)findViewById(R.id.spinner_ListaDispositivosBT);
 
 
 
@@ -170,6 +175,45 @@ public class AjustarBT extends AppCompatActivity {
         });
 
 
+    }
+
+    Set<BluetoothDevice> pairedDevices;
+
+    private void lista() {
+        pairedDevices = ConexionBluetooth.bluetoothAdapter.getBondedDevices();
+        ArrayList list = new ArrayList();
+
+        for (BluetoothDevice bt : pairedDevices) {
+            list.add(bt.getName());
+        }
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        spinnerListaDispositivosBT.setAdapter(adapter);
+
+        spinnerListaDispositivosBT.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+                    public void onItemSelected(AdapterView<?> parent,
+                                               android.view.View v, int position, long id) {
+                        Toast.makeText(AjustarBT.this, ""+parent.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                    }
+
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                }
+        );
+
+    }
+
+    public String getLocalBluetoothName() {
+        if (ConexionBluetooth.bluetoothAdapter == null) {
+            ConexionBluetooth.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        }
+        String name = ConexionBluetooth.bluetoothAdapter.getName();
+        if (name==null) {
+            name = ConexionBluetooth.bluetoothAdapter.getAddress();
+        }
+        return name;
     }
 
 
@@ -214,6 +258,8 @@ public class AjustarBT extends AppCompatActivity {
                             new String[] { Manifest.permission.BLUETOOTH_CONNECT },
                             REQUEST_ENABLE_CODE);
                 }
+            } else {
+                lista();
             }
         }
 

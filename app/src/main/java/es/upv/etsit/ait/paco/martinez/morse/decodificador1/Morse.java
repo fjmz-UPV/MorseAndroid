@@ -2,6 +2,7 @@ package es.upv.etsit.ait.paco.martinez.morse.decodificador1;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -11,6 +12,7 @@ import kotlin.collections.UArraySortingKt;
 
 public class Morse {
 
+    final static String TAG = "Morse-TAG";
     static final char PUNTO = '.';
     static final char RAYA = '-';
 
@@ -36,7 +38,6 @@ public class Morse {
         try {
             String tipoEvento = evento.getString("e");
             long tiempo = evento.getLong("t");
-            ((ComunicacionBT) actividad).evento.setText("tipoEvento: " + tipoEvento + " en instante: " + tiempo);
             char simbolo;
             String base;
             switch (tipoEvento) {
@@ -50,7 +51,8 @@ public class Morse {
                                 simbolo = PUNTO;
                             }
                             tiempo_ant = tiempo;
-                            base = ((ComunicacionBT) actividad).puntosRayas.getText().toString();
+                            if (cont==0) base ="";
+                            else         base = ((ComunicacionBT) actividad).puntosRayas.getText().toString();
                             ((ComunicacionBT) actividad).puntosRayas.setText(base+" "+simbolo);
                             puntosRayas[cont++] = simbolo;
                             if (cont==MAX_PUNTOS_RAYAS) cont=0;
@@ -60,6 +62,7 @@ public class Morse {
                             char letra = caracter(puntosRayas);
                             base = ((ComunicacionBT) actividad).letras.getText().toString();
                             ((ComunicacionBT) actividad).letras.setText(base+letra);
+                            ((ComunicacionBT) actividad).letra.setText(""+letra);
                             cont = 0;
                             break;
 
@@ -72,6 +75,7 @@ public class Morse {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.d(TAG, "Problemas con JSON recibido");
             Toast.makeText((Context)actividad, "Problemas con JSON recibido", Toast.LENGTH_SHORT);
         }
     }

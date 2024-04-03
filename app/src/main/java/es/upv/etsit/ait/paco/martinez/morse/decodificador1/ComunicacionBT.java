@@ -7,10 +7,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.media.TimedText;
 import android.os.Bundle;
 import android.os.Handler;
-import android.speech.tts.TextToSpeech;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,15 +28,24 @@ import java.util.UUID;
 
 public class ComunicacionBT extends AppCompatActivity {
 
+    final String TAG = "ComunicacionBT-TAG";
+
     final String NOMBRE_DISPOSITIVO_LLAVE_MORSE = "LlaveMorse";
 
     TextView recibido;
     ScrollView scrollView;
-    TextView evento;
+
 
     TextView puntosRayas;
 
     TextView letras;
+    TextView letra;
+
+    Button limpiar;
+
+    Button enviar;
+
+    Button led1, led2, led3;
 
     final int REQUEST_CODE_ENABLE_BLUETOOTH = 1;
 
@@ -54,18 +64,69 @@ public class ComunicacionBT extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comunicacion_bt);
 
-        recibido = (TextView) findViewById(R.id.recibido);
+        //recibido = (TextView) findViewById(R.id.recibido);
         //scrollView = (ScrollView)findViewById(R.id.textoscroll);
         //scrollView.addView(recibido);
-        evento = (TextView) findViewById(R.id.evento);
+
         puntosRayas = (TextView)findViewById(R.id.puntosRayas);
-        letras = (TextView) findViewById(R.id.letras);
+        letras = (TextView) findViewById(R.id.texto);
+        letra = (TextView) findViewById(R.id.letra);
+        limpiar = (Button) findViewById(R.id.limpiar);
+        enviar = (Button) findViewById(R.id.enviar);
+
+        led1 = (Button)findViewById(R.id.led1);
+        led2 = (Button)findViewById(R.id.led2);
+        led3 = (Button)findViewById(R.id.led3);
+
 
         buscarLlaveMorse();
         openBT();
 
+        limpiar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                letras.setText("...");
+            }
+        });
+
+        enviar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enviar("{\"com\": \"led1\", \"valor\": \"on\"}");
+            }
+        });
+
+        led1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enviar(comandoJson("info", "on"));
+            }
+        });
+
+        led2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    enviar(comandoJson("wpm", "16"));
+            }
+        });
+
+        led3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enviar(comandoJson("led3", "on"));
+                }
+            });
+
+
     }
 
+    private String comandoJson(String comando, String valor) {
+            return "{\"com\": " + "\"" + comando + "\"" + ", \"valor\": " + "\"" + valor + "\"" + "}";
+        }
+
+    private String comandoJson(String comando, int valor) {
+        return "{\"com\": " + "\"" + comando + "\"" + ", \"valor\": " + valor + "}";
+    }
 
     private void buscarLlaveMorse()
     {
@@ -126,6 +187,17 @@ public class ComunicacionBT extends AppCompatActivity {
     }
 
 
+    void enviar(String mensaje) {
+        try {
+            Log.d(TAG, "Mensaje a enviar: "+ mensaje);
+            mmOutputStream.write((mensaje).getBytes());
+            mmOutputStream.flush();
+        } catch (IOException e) {
+            Toast.makeText(this, "Problema enviando control a LlaveMorse", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
 
     void beginListenForData()
     {
@@ -153,7 +225,6 @@ public class ComunicacionBT extends AppCompatActivity {
                                     handler.post(new Runnable() {
                                         public void run() {
                                             JSONObject evento = null;
-                                            recibido.append(data+"\n");
                                             try {
                                                 evento = new JSONObject(data);
                                             } catch(JSONException e) {
